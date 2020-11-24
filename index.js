@@ -23,6 +23,7 @@ const { config } = require('./config/index');
 
 //@o Require the routes files
 const moviesApi = require('./routes/movies');
+const userMoviesApi = require('./routes/userMovies');
 
 //@o Add the errorHandlers Middleware.
 const {
@@ -44,6 +45,7 @@ app.use(helmet());
 //@o As it's a function we have to execute it and pass the express app.
 //@context ROUTES
 moviesApi(app);
+userMoviesApi(app);
 
 //@context Catch 404
 app.use(notFoundHandler);
