@@ -21,7 +21,7 @@ class UsersService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     //@action With the mongo lib action create, insert the data into the collection.
-    const createUserId = await this.MongoLib.create(this.collection, {
+    const createUserId = await this.mongoDB.create(this.collection, {
       name,
       email,
       password: hashedPassword,

@@ -5,6 +5,9 @@ const passport = require('passport');
 const boom = require('@hapi/boom');
 const jwt = require('jsonwebtoken');
 const ApiKeysService = require('../services/apiKeys');
+const UsersService = require('../services/users');
+const validationHandler = require('../utils/middleware/validationHandler');
+const { createUserSchema } = require('../utils/schemas/users');
 
 const { config } = require('../config');
 
@@ -17,6 +20,7 @@ const authApi = (app) => {
   app.use('/api/auth', router);
 
   const apiKeysService = new ApiKeysService();
+  const usersService = new UsersService();
 
   router.post('/sign-in', async (req, res, next) => {
     const { apiKeyToken } = req.body;
@@ -67,12 +71,29 @@ const authApi = (app) => {
     })(req, res, next);
 
   });
+
+  //@action Create a post router with the /sign-up route passing the validationHandler with the createUserSchema to validate the info given.
+  router.post('/sign-up', validationHandler(createUserSchema), async (req, res, next) => {
+    const { body: user } = req;
+
+    try {
+      //@action Using the createUser service, pass the destructured user from req body
+      const createdUserId = await usersService.createUser({user});
+
+      res.status(201).json({
+        data: createdUserId,
+        message: 'user created'
+      })
+    } catch (e) {
+      next(e);
+    }
+  });
 }
 
 module.exports = authApi;
 
 /**
- * @context To test this route on postman:
+ * @context To test sign-in route on postman:
  * @action Create a new Post Request, passing the route /api/auth/sign-in
  * @action On the Authorization tab, select Basic Auth and pass the user credentials.
  * @action On the Body, pass the same apiKeyToken as in the DB depending on the type of user you want.
@@ -81,4 +102,8 @@ module.exports = authApi;
  * If everything it's ok, you'll receive a response with the token and user.
  * @test
  * To debug, copy the JWT and paste it on https://jwt.io
+ * ## ----
+ * @context To test sign-up route on postman:
+ * @action Create a new Post Request, passing the route /api/auth/sign-up
+ * @action On the Body, pass name, email and password
 */
