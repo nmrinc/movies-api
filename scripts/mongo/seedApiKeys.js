@@ -49,7 +49,7 @@ async function seedApiKeys() {
     });
 
     await Promise.all(promises);
-    debug(chalk.green(`${promises.length} api keys have been created succesfully`)); // prettier-ignore
+    debug(chalk.green(`${promises.length} api keys have been created successfully`)); // prettier-ignore
     return process.exit(0);
   } catch (error) {
     debug(chalk.red(error));
