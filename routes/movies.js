@@ -4,6 +4,9 @@
 //@o First we require the express module
 const express = require('express');
 
+//@a Require passport library
+const passport = require('passport');
+
 //@o Require the service
 const MoviesService = require('./../services/movies');
 
@@ -24,6 +27,9 @@ const {
   SIXTY__MINUTES_IN_SECONDS
 } = require('./../utils/time');
 
+//@action Require the JWT strategy to secure the routes
+require('../utils/auth/strategies/jwt');
+
 //@o As we now have a service, we no longer require the mock data file
 //const { moviesMock } = require('../utils/mocks/movies.js');
 
@@ -40,7 +46,8 @@ const moviesApi = (app) => {
 
   //@o To feed the router we make a get request with a given route
   //@o As it's async code, we declare it in the callback function.
-  router.get('/', async (req, res, next) => {
+  //@a To secure the routes, pass the passport authenticate with the jwt strategy and session false
+  router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
 
     //@o Add the cacheResponse and pass the res. Setting a time.
     cacheResponse(res, FIVE_MINUTES_IN_SECONDS);
@@ -69,7 +76,7 @@ const moviesApi = (app) => {
 
   //@o In this case will receive an ID from the request and resolve the movie with this ID.
   //@o Pass the validationHandler into the middleware params
-  router.get('/:movieId', validationHandler({ movieId: movieIdSchema }, 'params'), async (req, res, next) => {
+  router.get('/:movieId', passport.authenticate('jwt', { session: false }), validationHandler({ movieId: movieIdSchema }, 'params'), async (req, res, next) => {
 
     //@o Based to the business logic add more time to less frequent.
     cacheResponse(res, SIXTY__MINUTES_IN_SECONDS);
@@ -90,7 +97,7 @@ const moviesApi = (app) => {
   });
 
   //@o Here we'll create a new movie
-  router.post('/', validationHandler(createMovieSchema), async (req, res, next) => {
+  router.post('/', passport.authenticate('jwt', { session: false }), validationHandler(createMovieSchema), async (req, res, next) => {
 
     //@o This will be called from the request's body. To have a more readable code we can assign an alias to that body.
     const { body: movie } = req;
@@ -108,7 +115,7 @@ const moviesApi = (app) => {
   });
 
   //@o Here we'll update a movie. Put replaces a full resource in the specific location.
-  router.put('/:movieId', validationHandler({ movieId: movieIdSchema }, 'params'), validationHandler(updateMovieSchema), async (req, res, next) => {
+  router.put('/:movieId', passport.authenticate('jwt', { session: false }), validationHandler({ movieId: movieIdSchema }, 'params'), validationHandler(updateMovieSchema), async (req, res, next) => {
 
     const { movieId } = req.params;
     const { body: movie } = req;
@@ -126,7 +133,7 @@ const moviesApi = (app) => {
   });
 
   //@o Here we'll a param of a movie. PATCH updates only a part/property of the resource.
-  router.patch('/:movieId', validationHandler({ movieId: movieIdSchema }, 'params'), validationHandler(updateMovieSchema), async (req, res, next) => {
+  router.patch('/:movieId', passport.authenticate('jwt', { session: false }), validationHandler({ movieId: movieIdSchema }, 'params'), validationHandler(updateMovieSchema), async (req, res, next) => {
 
     const { movieId } = req.params;
     const { body: movie } = req;
@@ -144,7 +151,7 @@ const moviesApi = (app) => {
   });
 
   //@o Here we'll delete a movie
-  router.delete('/:movieId', validationHandler({ movieId: movieIdSchema }, 'params'), async (req, res, next) => {
+  router.delete('/:movieId', passport.authenticate('jwt', { session: false }), validationHandler({ movieId: movieIdSchema }, 'params'), async (req, res, next) => {
 
     const { movieId } = req.params;
 

@@ -1,11 +1,17 @@
 const express = require('express');
 
+//@a Require passport library
+const passport = require('passport');
+
 const UserMoviesService = require('../services/userMovies');
 const validationHandler = require('../utils/middleware/validationHandler');
 
 const { movieIdSchema } = require('../utils/schemas/movies');
 const { userIdSchema } = require('../utils/schemas/users');
 const { createUserMovieSchema } = require('../utils/schemas/userMovies');
+
+//@action Require the JWT strategy to secure the routes
+require('../utils/auth/strategies/jwt');
 
 const userMoviesApi = (app) => {
   const router = express.Router();
@@ -14,7 +20,7 @@ const userMoviesApi = (app) => {
 
   const userMoviesService = new UserMoviesService();
 
-  router.get('/', validationHandler({ userId: userIdSchema }, 'query'),
+  router.get('/', passport.authenticate('jwt', { session: false }), validationHandler({ userId: userIdSchema }, 'query'),
     async (req, res, next) => {
       const { userId } = req.query;
 
@@ -31,7 +37,7 @@ const userMoviesApi = (app) => {
     }
   );
 
-  router.post('/', validationHandler(createUserMovieSchema), async (req, res, next) => {
+  router.post('/', passport.authenticate('jwt', { session: false }), validationHandler(createUserMovieSchema), async (req, res, next) => {
     const { body: userMovie } = req;
 
     try {
@@ -46,7 +52,7 @@ const userMoviesApi = (app) => {
     }
   });
 
-  router.delete('/:userMovieId', validationHandler({ userMovieId: movieIdSchema }, 'params'), async (req, res, next) => {
+  router.delete('/:userMovieId', passport.authenticate('jwt', { session: false }), validationHandler({ userMovieId: movieIdSchema }, 'params'), async (req, res, next) => {
     const { userMovieId } = req.params;
 
     try {
@@ -65,3 +71,8 @@ const userMoviesApi = (app) => {
 };
 
 module.exports = userMoviesApi;
+
+/**
+ * @context To test this routes, after protect them with a JWT, you need to sign in.
+ * @context And then in the authorization tab select the Bearer Token option and paste the given token.
+*/
